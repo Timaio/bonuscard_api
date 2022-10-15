@@ -51,9 +51,9 @@ class ShopsController < ApplicationController
       render json: {
         success: false,
         errors: safe_params.errors.to_h
-      }
+      }, status: :unprocessable_entity
     else
-      card = Card.find_by!(user_id: safe_params[:user_id], shop_id: safe_params[:shop_id])
+      card = Card.find_or_create_by!(user_id: safe_params[:user_id], shop_id: safe_params[:shop_id])
 
       render json: {
         success: true,
