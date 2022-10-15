@@ -1,9 +1,11 @@
 class ShopsController < ApplicationController
   schema :buy do
-    required(:shop_id).value(:integer)
-    required(:user_id).value(:integer)
-    required(:amount).value(:float)
-    required(:use_bonuses).value(:bool)
+    required(:shop_id).filled(:integer)
+    required(:user_id).filled(:integer)
+    required(:amount).filled(:float, gt?: 0)
+    required(:use_bonuses).filled(:bool)
+
+    config.messages.load_paths << 'config/locales/dry_schema.en.yml'
   end
 
   def index
