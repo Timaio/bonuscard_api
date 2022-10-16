@@ -38,11 +38,16 @@ class Card < ApplicationRecord
         end
       end
 
-      remaining_bonus += (amount_due * BONUS_PERCENTAGE).to_i
+      # Add bonuses of amount_due
+      if amount >= MIN_AMOUNT_TO_ADD_BONUSES
+        remaining_bonus += (amount_due * BONUS_PERCENTAGE).to_i
+      end
     else
-      # Add bonuses
+      # Only add bonuses
+      if amount >= MIN_AMOUNT_TO_ADD_BONUSES
+        remaining_bonus += (amount * BONUS_PERCENTAGE).to_i
+      end
 
-      remaining_bonus += (amount * BONUS_PERCENTAGE).to_i
       amount_due = amount
     end
 

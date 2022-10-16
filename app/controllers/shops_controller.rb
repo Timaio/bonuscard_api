@@ -55,11 +55,16 @@ class ShopsController < ApplicationController
         errors: safe_params.errors.to_h
       }, status: :unprocessable_entity
     else
-      card = Card.find_or_create_by!(user_id: safe_params[:user_id], shop_id: safe_params[:shop_id])
+      card_data = nil
+
+      Card.transaction do
+        card = Card.lock.find_or_create_by!(user_id: safe_params[:user_id], shop_id: safe_params[:shop_id])
+        card_data = card.update_bonuses(safe_params[:amount], safe_params[:use_bonuses])
+      end
 
       render json: {
         success: true,
-        data: card.update_bonuses(safe_params[:amount], safe_params[:use_bonuses])
+        data: card_data
       }
     end
   end

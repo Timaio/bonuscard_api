@@ -2,3 +2,4 @@ en:
   dry_schema:
     errors:
       filled?: "is required"
+      int?: "is required"
