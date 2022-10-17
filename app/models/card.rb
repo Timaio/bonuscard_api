@@ -10,45 +10,30 @@ class Card < ApplicationRecord
   validates :user_id, uniqueness: { scope: :shop_id }
 
   def update_bonuses(amount, use_bonuses)
-    amount_due = nil
+    amount_due = amount
     remaining_bonus = self.bonuses
 
+    # Withdraw bonuses
     if use_bonuses
-      # Withdraw bonuses
-
       user = self.user
 
-      if user.negative_balance
-        all_cards_bonuses = user.cards.sum(:bonuses)
+      bonus_balance = user.negative_balance ? user.cards.sum(:bonuses) : remaining_bonus
 
-        if all_cards_bonuses <= amount
-          amount_due = amount.round(half: :up) - all_cards_bonuses
-          remaining_bonus -= all_cards_bonuses
-        else
-          amount_due = 0
-          remaining_bonus -= amount.round(half: :up)
+      if bonus_balance <= amount
+        if bonus_balance > 0
+          amount_due = amount.round(half: :up) - bonus_balance
         end
+
+        remaining_bonus -= bonus_balance
       else
-        if remaining_bonus <= amount
-          amount_due = amount.round(half: :up) - remaining_bonus
-          remaining_bonus = 0
-        else
-          amount_due = 0
-          remaining_bonus -= amount.round(half: :up)
-        end
+        amount_due = 0
+        remaining_bonus -= amount.round(half: :up)
       end
+    end
 
-      # Add bonuses of amount_due
-      if amount >= MIN_AMOUNT_TO_ADD_BONUSES
-        remaining_bonus += (amount_due * BONUS_PERCENTAGE).to_i
-      end
-    else
-      # Only add bonuses
-      if amount >= MIN_AMOUNT_TO_ADD_BONUSES
-        remaining_bonus += (amount * BONUS_PERCENTAGE).to_i
-      end
-
-      amount_due = amount
+    # Add bonuses
+    if amount >= MIN_AMOUNT_TO_ADD_BONUSES
+      remaining_bonus += (amount_due * BONUS_PERCENTAGE).to_i
     end
 
     self.update(bonuses: remaining_bonus)
